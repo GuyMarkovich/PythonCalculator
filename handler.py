@@ -51,13 +51,18 @@ def remove_spaces(input_list):
         index_num += 1
 
     # if whitespace between two operands raise value error
-    index_num = 0
-    while index_num < len(input_list):
-        if input_list[index_num][1] == "operand" and input_list[index_num + 1][1] == "operand":
-            raise ValueError("Invalid whitespace between operands")
+    index_num = 1
+    while index_num < len(input_list) - 1:
+        if input_list[index_num - 1][1] == "operand" and input_list[index_num + 1][1] == "operand":
+            raise ValueError(f"Space at index: {index_num} is invalid, whitespace cannot be between two operands")
         index_num += 1
 
-    return input_list
+    # if no error raised so far remove all spaces
+    index_num = 0
+    while index_num < len(input_list):
+        if input_list[index_num][0] == ' ':
+            input_list.pop(index_num)
+        index_num += 1
 
 
 def main():
@@ -81,16 +86,16 @@ def main():
 
         input_lst.append(temp_list)
 
+    print(input_lst)  # print original input
+
+    # identify invalid input and remove spaces
     try:
         identify_garbage(input_lst)
+        remove_spaces(input_lst)
 
-        print(input_lst)
+        print(input_lst)  # print updated input if no invalid input found
     except ValueError as e:
         print(e)
-
-    input_lst = remove_spaces(input_lst)
-
-    print(input_lst)
 
 
 if __name__ == '__main__':
