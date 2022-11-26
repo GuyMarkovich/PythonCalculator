@@ -162,12 +162,12 @@ def check_tilda(input_list):
     if input_list[-1][0] == '~':
         raise SyntaxError(f"Tilda at index: {len(input_list) - 1} is invalid, cannot be last element in input,"
                           f" must appear before operand")
-    # if tilda between after operand raise syntax error
+    # if tilda after operand or exclamation mark raise syntax error
     index_num = 1
     while index_num < len(input_list) - 1:
         if input_list[index_num][0] == '~':
-            if input_list[index_num - 1][1] == "operand":
-                raise SyntaxError(f"Tilda at index: {index_num} is invalid, cannot be after an operand")
+            if input_list[index_num - 1][1] == "operand" or input_list[index_num - 1][0] == '!':
+                raise SyntaxError(f"Tilda at index: {index_num} is invalid, cannot be after an operand or exclamation mark")
         index_num += 1
 
     # if tilda is not followed by an operand or minus raise syntax error
@@ -189,6 +189,29 @@ def check_tilda(input_list):
                 if input_list[index_num + 1][0] == '~':
                     raise SyntaxError(f"Tilda at index: {index_num + 1} is invalid, cannot be after another tilda")
                 index_num += 1
+        index_num += 1
+
+
+# check ! operator
+def check_exclamation(input_list):
+    # if no exclamation is present return input_list
+    exclamation_cnt = 0
+    for index in input_list:
+        if index[0] == '!':
+            exclamation_cnt = exclamation_cnt + 1
+    if exclamation_cnt == 0:
+        return input_list
+    # if exclamation is first element in input_list raise syntax error
+    if input_list[0][0] == '!':
+        raise SyntaxError(f"Exclamation at index: 0 is invalid, cannot be first element in input,"
+                          f" must appear after operand or right parenthesis")
+    # exclamation must follow an operand or right parenthesis, otherwise raise syntax error
+    index_num = 0
+    while index_num < len(input_list) - 1:
+        if input_list[index_num][0] == '!':
+            if input_list[index_num - 1][1] != "operand" and input_list[index_num - 1][0] != ')':
+                raise SyntaxError(
+                    f"Exclamation at index: {index_num} is invalid, must be preceded by an operand or right parenthesis")
         index_num += 1
 
 
@@ -226,9 +249,10 @@ def main():
         remove_spaces(input_lst)
         # remove excess minuses
         remove_minuses(input_lst)
-
         # check if tilda in function located in valid position
         check_tilda(input_lst)
+        # check exclamation
+        check_exclamation(input_lst)
 
         print(input_lst)  # print updated input if no invalid input found for testing purposes
     except (ValueError, SyntaxError) as e:
