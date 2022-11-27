@@ -281,7 +281,7 @@ def check_binary(input_list):
         list_index += 1
 
 
-# main for testing purposes, should be moved to a separate file that is responsible for calculations
+# main for testing purposes, should be moved to a separate functions that completes all checks
 def main():
     # receive equation from user:
     raw_input = input("Input your equation here: ")
