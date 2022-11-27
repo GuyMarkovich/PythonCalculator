@@ -1,13 +1,4 @@
-# operator dictionary
-opDict = {  # Priority for all operands, numbers hold priority  0
-    '+': 1, '-': 1,
-    '*': 2, '/': 2,
-    '^': 3, '%': 4,
-    '$': 5, '&': 5, '@': 5,
-    '~': 6, '!': 6,
-    '(': 10, ')': 10,
-    '.': 0
-}
+from globals import *
 
 
 def identify_garbage(input_list):
@@ -144,75 +135,116 @@ def check_parenthesis(input_list):
         elif right_parenthesis_cnt < left_parenthesis_cnt:
             raise SyntaxError("Parenthesis are not balanced, missing right parenthesis")
         else:
-            # if parenthesis are balanced return input_list
-            return input_list
+            # left parenthesis cannot be last element in input_list
+            if input_list[-1][0] == '(':
+                raise SyntaxError("Left parenthesis cannot be last element in input")
+            # right parenthesis cannot be first element in input_list
+            if input_list[0][0] == ')':
+                raise SyntaxError("Right parenthesis cannot be first element in input")
+            # if left parenthesis is followed by right parenthesis raise syntax error
+            index_num = 0
+            while index_num < len(input_list) - 1:
+                if input_list[index_num][0] == '(' and input_list[index_num + 1][0] == ')':
+                    raise SyntaxError(f"Parenthesis at index: {index_num} invalid, cannot be empty")
+                index_num += 1
+            # left parenthesis must follow a binary operator or be the first element in input_list
+            index_num = 0
+            while index_num < len(input_list):
+                if input_list[index_num][0] == '(':
+                    if index_num != 0:
+                        if input_list[index_num - 1][0] not in binOps:
+                            raise SyntaxError(
+                                f"Parenthesis at index: {index_num} invalid, must follow a binary operator")
+                index_num += 1
+            # right parenthesis must follow an operand or be the last element in input_list
+            index_num = 0
+            while index_num < len(input_list):
+                if input_list[index_num][0] == ')':
+                    if input_list[index_num - 1][1] != 'operand':
+                        raise SyntaxError(
+                            f"Parenthesis at index: {index_num} invalid, must follow an operand")
+                index_num += 1
 
 
-# tilda check
-def check_tilda(input_list):
-    # if no tilda is present return input_list
-    tilda_cnt = 0
+# check left unary operators
+def check_left_unary(input_list):
+    # if no left unary operators are present return input_list
+    left_unary_cnt = 0
     for index in input_list:
-        if index[0] == '~':
-            tilda_cnt = tilda_cnt + 1
-    if tilda_cnt == 0:
+        if index[0] in leftUnOps:  # if index[0] is a left unary operator
+            left_unary_cnt = left_unary_cnt + 1  # update counter
+    if left_unary_cnt == 0:
         return input_list
-
-    # if tilda is last element in input_list raise syntax error
-    if input_list[-1][0] == '~':
-        raise SyntaxError(f"Tilda at index: {len(input_list) - 1} is invalid, cannot be last element in input,"
-                          f" must appear before operand")
-    # if tilda after operand or exclamation mark raise syntax error
+    # left unary operators cannot follow an operand or right parenthesis
     index_num = 1
-    while index_num < len(input_list) - 1:
-        if input_list[index_num][0] == '~':
-            if input_list[index_num - 1][1] == "operand" or input_list[index_num - 1][0] == '!':
-                raise SyntaxError(f"Tilda at index: {index_num} is invalid, cannot be after an operand or exclamation mark")
+    while index_num < len(input_list):
+        if input_list[index_num][0] in leftUnOps:
+            if input_list[index_num - 1][1] == 'operand' or input_list[index_num - 1][0] == ')':
+                raise SyntaxError(
+                    f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, cannot follow an operand or right "
+                    f"parenthesis")
         index_num += 1
-
-    # if tilda is not followed by an operand or minus raise syntax error
+    # left unary operators cannot be last element in input_list
+    if input_list[-1][0] in leftUnOps:
+        raise SyntaxError(
+            f"Operator: {input_list[-1][0]} at index: {len(input_list) - 1} is invalid, cannot be last element in input")
+    # left unary operators must be followed by an operand or minus or left parenthesis
     index_num = 0
     while index_num < len(input_list) - 1:
-        if input_list[index_num][0] == '~':
-            if input_list[index_num + 1][1] != "operand" and input_list[index_num + 1][0] != '-' \
-                    and input_list[index_num + 1][0] != '~':
-                # the line above allows invalid input (tilda after tilda) for
-                # the purpose of throwing an appropriate error in the next check
-                raise SyntaxError(f"Tilda at index: {index_num} is invalid, must be followed by an operand or minus")
+        if input_list[index_num][0] in leftUnOps:
+            if input_list[index_num + 1][1] != 'operand' and input_list[index_num + 1][0] != '-' \
+                    and input_list[index_num + 1][0] != '(':
+                raise SyntaxError(
+                    f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, must be followed by an "
+                    f"operand or minus or left parenthesis")
         index_num += 1
 
+
+# tilde check for incorrect use of tilde
+def check_tilde(input_list):
     # if after a tilda and before an operand there is another tilda raise syntax error
     index_num = 0
     while index_num < len(input_list) - 1:
         if input_list[index_num][0] == '~':
             while input_list[index_num + 1][1] != 'operand':
                 if input_list[index_num + 1][0] == '~':
-                    raise SyntaxError(f"Tilda at index: {index_num + 1} is invalid, cannot be after another tilda")
+                    raise SyntaxError(f"Tilde at index: {index_num + 1} is invalid, cannot be after another tilda")
                 index_num += 1
         index_num += 1
 
 
-# check ! operator
-def check_exclamation(input_list):
-    # if no exclamation is present return input_list
-    exclamation_cnt = 0
+# check right unary operators
+def check_right_unary(input_list):
+    # if no right unary operators are present return input_list
+    right_unary_cnt = 0
     for index in input_list:
-        if index[0] == '!':
-            exclamation_cnt = exclamation_cnt + 1
-    if exclamation_cnt == 0:
+        if index[0] in rightUnOps:
+            right_unary_cnt = right_unary_cnt + 1
+    if right_unary_cnt == 0:
         return input_list
-    # if exclamation is first element in input_list raise syntax error
-    if input_list[0][0] == '!':
-        raise SyntaxError(f"Exclamation at index: 0 is invalid, cannot be first element in input,"
+    # if right unary operator is first element in input_list raise syntax error
+    if input_list[0][0] in rightUnOps:
+        raise SyntaxError(f"Operator: {input_list[0][0]} at index: 0 is invalid, cannot be first element in input,"
                           f" must appear after operand or right parenthesis")
-    # exclamation must follow an operand or right parenthesis, otherwise raise syntax error
-    index_num = 0
-    while index_num < len(input_list) - 1:
-        if input_list[index_num][0] == '!':
-            if input_list[index_num - 1][1] != "operand" and input_list[index_num - 1][0] != ')':
+    # right unary operator must follow an operand or right parenthesis, otherwise raise syntax error
+    list_index = 0
+    while list_index < len(input_list) - 1:
+        if input_list[list_index][0] in rightUnOps:
+            if input_list[list_index - 1][1] != "operand" and input_list[list_index - 1][0] != ')':
                 raise SyntaxError(
-                    f"Exclamation at index: {index_num} is invalid, must be preceded by an operand or right parenthesis")
-        index_num += 1
+                    f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be preceded by an "
+                    f"operand or right "
+                    f"parenthesis")
+        list_index += 1
+    # right unary operator must be followed by a binary operator,otherwise raise syntax error
+    list_index = 0
+    while list_index < len(input_list) - 1:
+        if input_list[list_index][0] in rightUnOps:
+            if input_list[list_index + 1][1] not in binOps:
+                raise SyntaxError(
+                    f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
+                    f"binary operator")
+        list_index += 1
 
 
 # main for testing purposes, should be moved to a separate file that is responsible for calculations
@@ -243,16 +275,18 @@ def main():
     try:
         # identify invalid input
         identify_garbage(input_lst)
-        # check parenthesis are balanced
+        # check parenthesis are balanced and correctly placed
         check_parenthesis(input_lst)
         # remove unnecessary spaces and tabs and identify inappropriate spaces and tabs
         remove_spaces(input_lst)
         # remove excess minuses
         remove_minuses(input_lst)
-        # check if tilda in function located in valid position
-        check_tilda(input_lst)
-        # check exclamation
-        check_exclamation(input_lst)
+        # check left unary operators
+        check_left_unary(input_lst)
+        # check tilde
+        check_tilde(input_lst)
+        # check right unary operators
+        check_right_unary(input_lst)
 
         print(input_lst)  # print updated input if no invalid input found for testing purposes
     except (ValueError, SyntaxError) as e:
