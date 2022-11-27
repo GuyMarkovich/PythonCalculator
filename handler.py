@@ -196,20 +196,7 @@ def check_left_unary(input_list):
                     and input_list[index_num + 1][0] != '(':
                 raise SyntaxError(
                     f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, must be followed by an "
-                    f"operand or minus or left parenthesis")
-        index_num += 1
-
-
-# tilde check for incorrect use of tilde
-def check_tilde(input_list):
-    # if after a tilda and before an operand there is another tilda raise syntax error
-    index_num = 0
-    while index_num < len(input_list) - 1:
-        if input_list[index_num][0] == '~':
-            while input_list[index_num + 1][1] != 'operand':
-                if input_list[index_num + 1][0] == '~':
-                    raise SyntaxError(f"Tilde at index: {index_num + 1} is invalid, cannot be after another tilda")
-                index_num += 1
+                    f"operand, minus or left parenthesis")
         index_num += 1
 
 
@@ -244,6 +231,53 @@ def check_right_unary(input_list):
                 raise SyntaxError(
                     f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
                     f"binary operator")
+        list_index += 1
+
+
+# check binary operators
+def check_binary(input_list):
+    # binary operators cannot be first element in input_list
+    if input_list[0][1] in binOps:
+        raise SyntaxError(f"Operator: {input_list[0][0]} at index: 0 is invalid, cannot be first element in input")
+    # binary operators cannot be last element in input_list
+    if input_list[-1][1] in binOps:
+        raise SyntaxError(
+            f"Operator: {input_list[-1][0]} at index: {len(input_list) - 1} is invalid, cannot be last element in input")
+    # binary operators cannot be followed by another binary operator other than minus and left parenthesis
+    list_index = 0
+    while list_index < len(input_list):
+        if input_list[list_index][0] in binOps:
+            if input_list[list_index + 1][0] in binOps and input_list[list_index + 1][0] != '-' and \
+                    input_list[list_index + 1][0] != '(':
+                # special case for decimal point, must be followed by a digit and thus has a different error message
+                if input_list[list_index][0] == '.':
+                    raise SyntaxError(
+                        f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed "
+                        f"by an "
+                        f"operand")
+                else:
+                    raise SyntaxError(
+                        f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, cannot be followed "
+                        f"by another binary operator other than minus and left parenthesis")
+        list_index += 1
+    # binary operators must be preceded by an operand or right parenthesis
+    list_index = 0
+    while list_index < len(input_list):
+        if input_list[list_index][1] in binOps:
+            if input_list[list_index - 1][1] != 'operand' and input_list[list_index - 1][0] != ')':
+                raise SyntaxError(
+                    f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be preceded by an "
+                    f"operand or right parenthesis")
+        list_index += 1
+    # in case of decimal, check that it isn't followed or preceded by parenthesis
+    # if the binary operator is . it must be preceded and followed by an operand
+    list_index = 0
+    while list_index < len(input_list) - 1:
+        if input_list[list_index][0] == '.':
+            if input_list[list_index - 1][1] != 'operand' or input_list[list_index + 1][1] != 'operand':
+                raise SyntaxError(
+                    f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, decimal must be "
+                    f"preceded and followed by an operand")
         list_index += 1
 
 
@@ -283,10 +317,10 @@ def main():
         remove_minuses(input_lst)
         # check left unary operators
         check_left_unary(input_lst)
-        # check tilde
-        check_tilde(input_lst)
         # check right unary operators
         check_right_unary(input_lst)
+        # check binary operators
+        check_binary(input_lst)
 
         print(input_lst)  # print updated input if no invalid input found for testing purposes
     except (ValueError, SyntaxError) as e:
