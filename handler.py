@@ -60,9 +60,12 @@ def remove_spaces(input_list):
                     raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
                                       f"and digit in a negative number")
                 else:
+                    # if the minus is not the first in the input, check the last char before the minus
                     prev_cnt = 2
-                    while input_list[index_num - prev_cnt][1] != 'operand' and input_list[index_num - prev_cnt][1] != 'operator':
+                    while input_list[index_num - prev_cnt][1] != 'operand' and input_list[index_num - prev_cnt][
+                        1] != 'operator':
                         prev_cnt += 1
+                    # if the previous char is an operator, the minus is part of a negative number and the space is invalid
                     if input_list[index_num - prev_cnt][1] == "operator":
                         raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
                                           f"and digit in a negative number")
@@ -253,10 +256,22 @@ def check_right_unary(input_list):
                     f"operand or right "
                     f"parenthesis")
         list_index += 1
-    # right unary operator must be followed by a binary operator,otherwise raise syntax error
+    # right unary operator must be followed by a binary operator, or right unary operator,otherwise raise syntax error
     list_index = 0
     while list_index < len(input_list) - 1:
         if input_list[list_index][0] in rightUnOps:
+            if input_list[list_index + 1][0] not in binOps and input_list[list_index + 1][0] not in rightUnOps:
+                raise SyntaxError(
+                    f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
+                    f"binary operator")
+        list_index += 1
+
+
+def check_factorial(input_list):
+    # factorial must be followed by a binary operator otherwise raise syntax error
+    list_index = 0
+    while list_index < len(input_list) - 1:
+        if input_list[list_index][0] == '!':
             if input_list[list_index + 1][0] not in binOps:
                 raise SyntaxError(
                     f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
@@ -339,16 +354,18 @@ def main():
     try:
         # identify invalid input
         identify_garbage(input_lst)
-        # check parenthesis are balanced and correctly placed
-        check_parenthesis(input_lst)
         # remove unnecessary spaces and tabs and identify inappropriate spaces and tabs
         remove_spaces(input_lst)
+        # check parenthesis are balanced and correctly placed
+        check_parenthesis(input_lst)
         # remove excess minuses
         remove_minuses(input_lst)
         # check left unary operators
         check_left_unary(input_lst)
         # check right unary operators
         check_right_unary(input_lst)
+        # check factorial
+        check_factorial(input_lst)
         # check binary operators
         check_binary(input_lst)
 
