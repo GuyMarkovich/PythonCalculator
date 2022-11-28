@@ -198,6 +198,18 @@ def check_left_unary(input_list):
                     f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, must be followed by an "
                     f"operand, minus or left parenthesis")
         index_num += 1
+    # if after left unary operator and before the next operand there is another left unary operator raise syntax error
+    index_num = 0
+    while index_num < len(input_list):
+        if input_list[index_num][0] in leftUnOps:
+            index_num += 1
+            while input_list[index_num][1] != 'operand':
+                if input_list[index_num][0] in leftUnOps:
+                    raise SyntaxError(
+                        f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, cannot follow "
+                        f"another left unary operator")
+                index_num += 1
+        index_num += 1
 
 
 # check right unary operators
@@ -236,8 +248,8 @@ def check_right_unary(input_list):
 
 # check binary operators
 def check_binary(input_list):
-    # binary operators cannot be first element in input_list
-    if input_list[0][1] in binOps:
+    # binary operators cannot be first element in input_list unless it's a minus
+    if input_list[0][0] in binOps and input_list[0][0] != '-':
         raise SyntaxError(f"Operator: {input_list[0][0]} at index: 0 is invalid, cannot be first element in input")
     # binary operators cannot be last element in input_list
     if input_list[-1][1] in binOps:
