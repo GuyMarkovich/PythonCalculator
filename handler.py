@@ -49,6 +49,24 @@ def remove_spaces(input_list):
             if input_list[index_num - 1][1] == "operand" and input_list[index_num + 1][1] == "operand":
                 raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between two operands")
         index_num += 1
+    # if whitespace between minus and operand, if the char before the minus is not an operand raise syntax error if
+    # the char before the minus is an operator or the minus is the start of the input, the minus is part of a
+    # negative number, since spaces between operands are illegal this is an invalid input
+    index_num = 0
+    while index_num < len(input_list):
+        if input_list[index_num][0] == ' ':
+            if input_list[index_num - 1][0] == '-' and input_list[index_num + 1][1] == "operand":
+                if index_num - 1 == 0:
+                    raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
+                                      f"and digit in a negative number")
+                else:
+                    prev_cnt = 2
+                    while input_list[index_num - prev_cnt][1] != 'operand' and input_list[index_num - prev_cnt][1] != 'operator':
+                        prev_cnt += 1
+                    if input_list[index_num - prev_cnt][1] == "operator":
+                        raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
+                                          f"and digit in a negative number")
+        index_num += 1
 
     # if no error raised so far remove all spaces
     index_num = 0
