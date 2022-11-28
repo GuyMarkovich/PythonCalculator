@@ -227,7 +227,7 @@ def check_right_unary(input_list):
     list_index = 0
     while list_index < len(input_list) - 1:
         if input_list[list_index][0] in rightUnOps:
-            if input_list[list_index + 1][1] not in binOps:
+            if input_list[list_index + 1][0] not in binOps:
                 raise SyntaxError(
                     f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
                     f"binary operator")
