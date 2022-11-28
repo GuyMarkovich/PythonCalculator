@@ -337,6 +337,7 @@ def main():
         print(input_lst)  # print updated input if no invalid input found for testing purposes
     except (ValueError, SyntaxError) as e:
         print(e)
+        exit(1)
 
 
 if __name__ == '__main__':
