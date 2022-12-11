@@ -43,7 +43,7 @@ def append_minus(input_lst, cnt_holder, op_str):
                 cnt_holder.reset_minus_cnt()
 
 
-def check_binOps(index, raw_input, input_lst, cnt_holder):
+def check_binOps(index, raw_input, input_lst, cnt_holder, op_str):
     # minus is the only binary operator that can be the first character since it is also a left unary operator
     if index == 0 and raw_input[index] != '-':
         raise SyntaxError(
@@ -70,6 +70,8 @@ def check_binOps(index, raw_input, input_lst, cnt_holder):
     else:
         if raw_input[index] == '-':
             cnt_holder.inc_minus_cnt()
+        elif raw_input[index] == '.':
+            op_str.add_to_op_str(raw_input[index])
         else:
             temp_lst = [raw_input[index], 'operator',
                         opDict[raw_input[index]] + cnt_holder.get_parentheses_multiplier()]
@@ -117,7 +119,8 @@ def check_rightUnOps(index, raw_input, input_lst, cnt_holder):
     # if the previous character is not an operator or an open parenthesis, throw a syntax error
     elif raw_input[index - 1] not in operands and raw_input[index - 1] != ')' \
             and raw_input[index - 1] not in rightUnOps:
-        raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}")
+        raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, right unary operator "
+                          f"must follow an operand or a closed parenthesis")
     # if next character is not a binary operator, or a right unary operator, or a closed parenthesis, throw a syntax
     # error
     elif index != len(raw_input) - 1 and raw_input[index + 1] not in binOps and raw_input[index + 1] not in rightUnOps \
@@ -131,16 +134,16 @@ def check_rightUnOps(index, raw_input, input_lst, cnt_holder):
         input_lst.append(temp_lst)
 
 
-def check_allOps(index, raw_input, input_lst, cnt_holder, operand_str):
+def check_allOps(index, raw_input, input_lst, cnt_holder, op_str):
     """divide all operators into their respective categories"""
     if raw_input[index] in binOps:
-        check_binOps(index, raw_input, input_lst, cnt_holder)
+        check_binOps(index, raw_input, input_lst, cnt_holder, op_str)
         return
     elif raw_input[index] in rightUnOps:
         check_rightUnOps(index, raw_input, input_lst, cnt_holder)
         return
     elif raw_input[index] in leftUnOps:
-        check_leftUnOps(index, raw_input, input_lst, cnt_holder, operand_str)
+        check_leftUnOps(index, raw_input, input_lst, cnt_holder, op_str)
         return
 
 
@@ -162,7 +165,10 @@ def check_input(raw_input, input_lst, op_str, cnt_holder: CounterHolder):
             op_str.add_to_op_str(raw_input[index])
             index += 1
         elif i in allOps:
-            append_operand(op_str, input_lst, cnt_holder)
+            # if operator is a decimal point no need to get rid of the stored operand string
+            # before adding it to the number
+            if i != '.':
+                append_operand(op_str, input_lst, cnt_holder)
 
             check_allOps(index, raw_input, input_lst, cnt_holder, op_str)
             index += 1
@@ -201,7 +207,6 @@ def check_input(raw_input, input_lst, op_str, cnt_holder: CounterHolder):
 def main():
     cnt_holder = CounterHolder()
 
-    operand_str = ''  # string to hold the operands, temporary variable to be used in the check_input function
     op_str = OpString('')  # string to hold the operators, temporary variable to be used in the check_input function
 
     # receive equation from user:
@@ -219,3 +224,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# things to be added:
+# change input lst to an object of type Equation
+# the Object should be created in the check_input function
+# implement a recursive function to solve the equation

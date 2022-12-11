@@ -48,6 +48,7 @@ class CounterHolder:
 
 class OpString:
     """class used to store an operand before it is added to the new list"""
+
     def __init__(self, op_str):
         self.op_str = op_str
 
@@ -62,3 +63,17 @@ class OpString:
 
     def empty_op_str(self):
         self.op_str = ''
+
+
+class Equation:
+    def __init__(self):
+        self.equation = []
+
+    def add_to_equation(self, item):
+        self.equation.append(item)
+
+    def get_equation(self):
+        if len(self.equation) == 1:
+            return self.equation[0]
+        else:
+            print("Solving incomplete")
