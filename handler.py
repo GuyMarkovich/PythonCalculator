@@ -1,8 +1,12 @@
 from globals import *
 
+"""this file should be ignored going forward, it is obsolete and only kept for reference, 
+    its purpose is now fulfilled by the input_handler.py file"""
+
 
 def identify_garbage(input_list):
-    """Identifies invalid input, does not check syntax correctness for valid input"""
+    """Identifies invalid input such as characters that aren't digits or operators, does not check syntax correctness
+    for valid input """
     index_num = 0  # tracks index
     for index in input_list:
         if index[2] == -1:
@@ -48,6 +52,29 @@ def remove_spaces(input_list):
         if input_list[index_num][0] == ' ':
             if input_list[index_num - 1][1] == "operand" and input_list[index_num + 1][1] == "operand":
                 raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between two operands")
+        index_num += 1
+    # if whitespace between minus and operand, if the char before the minus is not an operand raise syntax error if
+    # the char before the minus is an operator or the minus is the start of the input, the minus is part of a
+    # negative number, since spaces between operands are illegal this is an invalid input
+    index_num = 0
+    while index_num < len(input_list):
+        if input_list[index_num][0] == ' ':
+            if input_list[index_num - 1][0] == '-' and input_list[index_num + 1][1] == "operand" or \
+                    input_list[index_num - 1][0] == '-' and input_list[index_num + 1][0] == '(':
+                if index_num - 1 == 0:
+                    raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
+                                      f"and digit in a negative number")
+                else:
+                    # if the minus is not the first in the input, check the last char before the minus
+                    prev_cnt = 2
+                    while input_list[index_num - prev_cnt][1] != 'operand' and input_list[index_num - prev_cnt][
+                        1] != 'operator':
+                        prev_cnt += 1
+                    # if the previous char is an operator, the minus is part of a negative number and the space is
+                    # invalid
+                    if input_list[index_num - prev_cnt][1] == "operator":
+                        raise SyntaxError(f"Space at index: {index_num} is invalid, whitespace cannot be between minus "
+                                          f"and digit in a negative number")
         index_num += 1
 
     # if no error raised so far remove all spaces
@@ -147,22 +174,47 @@ def check_parenthesis(input_list):
                 if input_list[index_num][0] == '(' and input_list[index_num + 1][0] == ')':
                     raise SyntaxError(f"Parenthesis at index: {index_num} invalid, cannot be empty")
                 index_num += 1
-            # left parenthesis must follow a binary operator or be the first element in input_list
+            # left parenthesis must follow a binary operator, another left parenthesis or be the first element in
+            # input_list
             index_num = 0
             while index_num < len(input_list):
                 if input_list[index_num][0] == '(':
                     if index_num != 0:
-                        if input_list[index_num - 1][0] not in binOps:
+                        if input_list[index_num - 1][0] not in binOps and input_list[index_num - 1][0] != '(':
                             raise SyntaxError(
                                 f"Parenthesis at index: {index_num} invalid, must follow a binary operator")
                 index_num += 1
-            # right parenthesis must follow an operand or be the last element in input_list
+            # right parenthesis must follow an operand or right unary operator or another right parenthesis
             index_num = 0
             while index_num < len(input_list):
                 if input_list[index_num][0] == ')':
-                    if input_list[index_num - 1][1] != 'operand':
+                    if input_list[index_num - 1][1] != 'operand' and input_list[index_num - 1][0] not in rightUnOps \
+                            and input_list[index_num - 1][0] != ')':
                         raise SyntaxError(
                             f"Parenthesis at index: {index_num} invalid, must follow an operand")
+                index_num += 1
+            # left parenthesis must be followed by an operand or left unary operator
+            # or another left parenthesis or a minus
+            index_num = 0
+            while index_num < len(input_list):
+                if input_list[index_num][0] == '(':
+                    if input_list[index_num + 1][1] != 'operand' and input_list[index_num + 1][0] not in leftUnOps \
+                            and input_list[index_num + 1][0] != '(' and input_list[index_num + 1][0] != '-':
+                        raise SyntaxError(
+                            f"Parenthesis at index: {index_num} invalid, must be followed by an operand or left unary "
+                            f"operator or another left parenthesis")
+                index_num += 1
+            # right parenthesis must be followed by a binary operator or right parenthesis or right unary operator
+            index_num = 0
+            while index_num < len(input_list):
+                if input_list[index_num][0] == ')':
+                    # if right parenthesis is not last element in input_list keep checking
+                    if index_num != len(input_list) - 1:
+                        if input_list[index_num + 1][0] not in binOps and input_list[index_num + 1][0] != ')' and \
+                                input_list[index_num + 1][0] not in rightUnOps:
+                            raise SyntaxError(
+                                f"Parenthesis at index: {index_num} invalid, must be followed by a binary operator or "
+                                f"right parenthesis or right unary operator")
                 index_num += 1
 
 
@@ -181,8 +233,8 @@ def check_left_unary(input_list):
         if input_list[index_num][0] in leftUnOps:
             if input_list[index_num - 1][1] == 'operand' or input_list[index_num - 1][0] == ')':
                 raise SyntaxError(
-                    f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, cannot follow an operand or right "
-                    f"parenthesis")
+                    f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, cannot follow an operand "
+                    f"or right parenthesis")
         index_num += 1
     # left unary operators cannot be last element in input_list
     if input_list[-1][0] in leftUnOps:
@@ -197,6 +249,18 @@ def check_left_unary(input_list):
                 raise SyntaxError(
                     f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, must be followed by an "
                     f"operand, minus or left parenthesis")
+        index_num += 1
+    # if after left unary operator and before the next operand there is another left unary operator raise syntax error
+    index_num = 0
+    while index_num < len(input_list):
+        if input_list[index_num][0] in leftUnOps:
+            index_num += 1
+            while input_list[index_num][1] != 'operand':
+                if input_list[index_num][0] in leftUnOps:
+                    raise SyntaxError(
+                        f"Operator: {input_list[index_num][0]} at index: {index_num} is invalid, cannot follow "
+                        f"another left unary operator")
+                index_num += 1
         index_num += 1
 
 
@@ -213,31 +277,36 @@ def check_right_unary(input_list):
     if input_list[0][0] in rightUnOps:
         raise SyntaxError(f"Operator: {input_list[0][0]} at index: 0 is invalid, cannot be first element in input,"
                           f" must appear after operand or right parenthesis")
-    # right unary operator must follow an operand or right parenthesis, otherwise raise syntax error
+    # right unary operator must follow an operand, another right unary operator or right parenthesis, otherwise raise
+    # syntax error
     list_index = 0
     while list_index < len(input_list) - 1:
         if input_list[list_index][0] in rightUnOps:
-            if input_list[list_index - 1][1] != "operand" and input_list[list_index - 1][0] != ')':
+            if input_list[list_index - 1][1] != "operand" and input_list[list_index - 1][0] != ')' and \
+                    input_list[list_index - 1][0] not in rightUnOps:
                 raise SyntaxError(
                     f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be preceded by an "
                     f"operand or right "
                     f"parenthesis")
         list_index += 1
-    # right unary operator must be followed by a binary operator,otherwise raise syntax error
+    # right unary operator must be followed by a binary operator or right parenthesis or right unary operator,
+    # otherwise raise syntax error
     list_index = 0
     while list_index < len(input_list) - 1:
         if input_list[list_index][0] in rightUnOps:
-            if input_list[list_index + 1][1] not in binOps:
+            if input_list[list_index + 1][0] not in binOps and input_list[list_index + 1][0] not in rightUnOps and \
+                    input_list[list_index + 1][0] != ')':
                 raise SyntaxError(
                     f"Operator: {input_list[list_index][0]} at index: {list_index} is invalid, must be followed by a "
-                    f"binary operator")
+                    f"binary operator, right "
+                    f"parenthesis or right unary operator")
         list_index += 1
 
 
 # check binary operators
 def check_binary(input_list):
-    # binary operators cannot be first element in input_list
-    if input_list[0][1] in binOps:
+    # binary operators cannot be first element in input_list unless it's a minus
+    if input_list[0][0] in binOps and input_list[0][0] != '-':
         raise SyntaxError(f"Operator: {input_list[0][0]} at index: 0 is invalid, cannot be first element in input")
     # binary operators cannot be last element in input_list
     if input_list[-1][1] in binOps:
@@ -309,10 +378,10 @@ def main():
     try:
         # identify invalid input
         identify_garbage(input_lst)
-        # check parenthesis are balanced and correctly placed
-        check_parenthesis(input_lst)
         # remove unnecessary spaces and tabs and identify inappropriate spaces and tabs
         remove_spaces(input_lst)
+        # check parenthesis are balanced and correctly placed
+        check_parenthesis(input_lst)
         # remove excess minuses
         remove_minuses(input_lst)
         # check left unary operators
@@ -325,7 +394,25 @@ def main():
         print(input_lst)  # print updated input if no invalid input found for testing purposes
     except (ValueError, SyntaxError) as e:
         print(e)
+        exit(1)
 
 
 if __name__ == '__main__':
     main()
+
+# def check_spaces(index, raw_input, input_lst):
+#     if index == 0:
+#         # if first character is a space, remove it
+#         raw_input = raw_input[:index] + raw_input[index + 1:]
+#     elif index == len(raw_input) - 1:
+#         # if last character is a space, remove it
+#         raw_input = raw_input[:index]
+#     else:
+#         # if previous character is an operand and next character is an operand, raise error
+#         if raw_input[index - 1] in operands and raw_input[index + 1] in operands:
+#             raise SyntaxError(f"Space at index {index}, space between operands is not allowed")
+#         # else remove space
+#         else:
+#             raw_input = raw_input[:index] + raw_input[index + 1:]
+#     # testing
+#     return raw_input
