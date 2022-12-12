@@ -34,7 +34,6 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
         # if last character on list is a binary operator, left unary operator or an open parenthesis the minus is a
         # left unary operator
         elif curr_equation.equation[len(curr_equation.equation) - 1][0] in binOps \
-                or curr_equation.equation[len(curr_equation.equation) - 1][0] in leftUnOps \
                 or curr_equation.equation[len(curr_equation.equation) - 1][0] == '(':
             if cnt_holder.get_minus_cnt() % 2 == 1:
                 op_str.add_to_beginning('-')
@@ -43,26 +42,39 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                 cnt_holder.reset_minus_cnt()
         # else: one minus will be added to the operand string and the rest will be counted as a binary operator
         else:
-            if (cnt_holder.get_minus_cnt() - 1) % 2 == 1:
+            # minus that should be added to the operand string
+            minus_to_take = 1
+            # if the minuses come before a left unary operator, no minus gets attached to the operand string
+            # thus no need to remove 1
+            if raw_input[index] in leftUnOps:
+                minus_to_take = 0
+            if (cnt_holder.get_minus_cnt() - minus_to_take) % 2 == 1:
                 temp_lst = ['-', 'operator', opDict['-'] + cnt_holder.get_parentheses_multiplier()]
                 curr_equation.equation.append(temp_lst)
                 cnt_holder.reset_minus_cnt()
-                op_str.add_to_beginning('-')
+                if minus_to_take == 1:
+                    op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
             else:
                 temp_lst = ['+', 'operator', opDict['+'] + cnt_holder.get_parentheses_multiplier()]
                 curr_equation.equation.append(temp_lst)
                 cnt_holder.reset_minus_cnt()
-                op_str.add_to_beginning('-')
+                if minus_to_take == 1:
+                    op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
     # if only one minus sign, check if it is a left unary operator
     elif cnt_holder.get_minus_cnt() == 1:
-        # if list is currently empty, the previous char is a binary operator, or the previous char is a left unary
-        # operator the minus is a left unary operator
-        if curr_equation.equation[len(curr_equation.equation) - 1][0] in binOps \
-                or curr_equation.equation[len(curr_equation.equation) - 1][0] in leftUnOps \
-                or len(curr_equation.equation) == 0:
-            op_str.add_to_beginning('-')
+        # if list is currently empty, the previous char is a binary operator, an open parenthesis or the previous
+        # char is a left unary operator the minus is a left unary operator
+        if len(curr_equation.equation) == 0 or curr_equation.equation[len(curr_equation.equation) - 1][0] in binOps \
+                or curr_equation.equation[len(curr_equation.equation) - 1][0] == '(':
+            # special case for unary minuses at the beginning of the equation when the first non
+            # minus char is a parenthesis, we can append a tilde instead of a minus
+            if raw_input[index] == '(':
+                temp_lst = ['~', 'operator', opDict['~'] + cnt_holder.get_parentheses_multiplier()]
+                curr_equation.equation.append(temp_lst)
+            else:
+                op_str.add_to_beginning('-')
             cnt_holder.reset_minus_cnt()
         else:
             temp_lst = ['-', 'operator', opDict['-'] + cnt_holder.get_parentheses_multiplier()]
@@ -215,7 +227,9 @@ def check_input(raw_input, curr_equation, op_str, cnt_holder: CounterHolder):
             curr_equation.equation.append(temp_lst)
             index += 1
         elif i == ')':
-
+            if cnt_holder.get_parentheses_multiplier() == 0:
+                raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, closed "
+                                  f"parenthesis cannot be placed before an open parenthesis")
             append_operand(op_str, curr_equation, cnt_holder)
 
             temp_lst = [raw_input[index], 'operator',
