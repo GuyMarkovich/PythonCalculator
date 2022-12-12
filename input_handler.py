@@ -12,8 +12,9 @@ def append_operand(op_str, input_lst, cnt_holder):
         cnt_holder.tilde_reset()
 
 
-def append_minus(input_lst, cnt_holder, op_str):
-    if cnt_holder.get_minus_cnt() > 0:
+def append_minus(raw_input, input_lst, cnt_holder, op_str):
+    # in case of multiple minus signs:
+    if cnt_holder.get_minus_cnt() > 1:
         # if list is previously empty, the minus sign is a left unary operator
         if len(input_lst) == 0:
             if cnt_holder.get_minus_cnt() % 2 == 1:
@@ -22,7 +23,7 @@ def append_minus(input_lst, cnt_holder, op_str):
             else:
                 cnt_holder.reset_minus_cnt()
         # if last character on list is a binary operator the minus is a left unary operator
-        elif input_lst[len(input_lst) - 1][0] in binOps:
+        elif input_lst[len(input_lst) - 1][0] in binOps or input_lst[len(input_lst) - 1][0] in leftUnOps:
             if cnt_holder.get_minus_cnt() % 2 == 1:
                 op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
@@ -41,6 +42,18 @@ def append_minus(input_lst, cnt_holder, op_str):
                 cnt_holder.reset_minus_cnt()
                 op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
+    # if only one minus sign, check if it is a left unary operator
+    elif cnt_holder.get_minus_cnt() == 1:
+        # if list is currently empty, the previous char is a binary operator, or the previous char is a left unary
+        # operator the minus is a left unary operator
+        if input_lst[len(input_lst) - 1][0] in binOps or input_lst[len(input_lst) - 1][0] in leftUnOps \
+                or len(input_lst) == 0:
+            op_str.add_to_beginning('-')
+            cnt_holder.reset_minus_cnt()
+        else:
+            temp_lst = ['-', 'operator', opDict['-'] + cnt_holder.get_parentheses_multiplier()]
+            input_lst.append(temp_lst)
+            cnt_holder.reset_minus_cnt()
 
 
 def check_binOps(index, raw_input, input_lst, cnt_holder, op_str):
@@ -68,8 +81,10 @@ def check_binOps(index, raw_input, input_lst, cnt_holder, op_str):
             f"followed by a number, minus, open parenthesis, or another left unary operator")
     # if passed all checks, append to input_lst
     else:
+        # keep count of how many minus signs have been seen
         if raw_input[index] == '-':
             cnt_holder.inc_minus_cnt()
+        # decimal should be appended to the operand string and not as a binary operator
         elif raw_input[index] == '.':
             op_str.add_to_op_str(raw_input[index])
         else:
@@ -104,8 +119,8 @@ def check_leftUnOps(index, raw_input, input_lst, cnt_holder, op_str):
             raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, tilde (~) "
                               f"cannot be used more than once on one operand")
 
-        # since a left unary operator can appear before a minus we need to append any previously counted minus signs
-        append_minus(input_lst, cnt_holder, op_str)
+        # since a left unary operator can appear after a minus we need to append any previously counted minus signs
+        append_minus(raw_input, input_lst, cnt_holder, op_str)
 
         temp_lst = [raw_input[index], 'operator', opDict[raw_input[index]] + cnt_holder.parentheses_multiplier]
         input_lst.append(temp_lst)
@@ -160,7 +175,7 @@ def check_input(raw_input, input_lst, op_str, cnt_holder: CounterHolder):
     for i in raw_input:
         if i in operands:
             # append any previously counted minus signs
-            append_minus(input_lst, cnt_holder, op_str)
+            append_minus(raw_input, input_lst, cnt_holder, op_str)
             # add operand to the string
             op_str.add_to_op_str(raw_input[index])
             index += 1
@@ -208,10 +223,13 @@ def main():
     cnt_holder = CounterHolder()
 
     op_str = OpString('')  # string to hold the operators, temporary variable to be used in the check_input function
-
-    # receive equation from user:
-    raw_input = input("Input your equation here: ")
     input_lst = []  # list will hold the modified equation
+    # receive equation from user:
+    try:
+        raw_input = input("Input your equation here: ")
+    except EOFError:
+        print("EOF entered, please retry with a valid equation")
+        exit(1)
     try:
         input_lst = check_input(raw_input, input_lst, op_str, cnt_holder)
         print(raw_input)
