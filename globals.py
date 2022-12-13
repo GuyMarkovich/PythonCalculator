@@ -27,18 +27,7 @@ leftUnOps = ['~']
 allOps = binOps + rightUnOps + leftUnOps
 
 
-# dictionary of all functions
-funcDict = {
-    '+': addition,
-    '-': subtraction,
-    '*': multiplication,
-    '/': division,
-    '^': power,
-    '%': modulo,
-    '$': maximum,
-    '&': minimum,
-    '@': average,
-    '~': tilde,
-    '!': factorial,
-    '#': sum_of_digits
-}
+
+
+
+

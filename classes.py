@@ -8,6 +8,7 @@ class CounterHolder:
         self.tilde_cnt = 0
         # counter for minus operators in the equation
         self.minus_cnt = 0
+        self.pre_minus_char = ''
 
     # increase priority of operators by 10 inside parentheses
     def inc_parentheses_multiplier(self):
@@ -45,6 +46,8 @@ class CounterHolder:
     def get_minus_cnt(self):
         return self.minus_cnt
 
+    def set_pre_minus_char(self, char):
+        self.pre_minus_char = char
 
 class OpString:
     """class used to store an operand before it is added to the new list"""
@@ -67,13 +70,7 @@ class OpString:
 
 class Equation:
     def __init__(self):
-        self.equation = []
+        self.equation = [] #list that will hold the equation
+        self.operator_stack = [] #stack that will hold the operators
 
-    def add_to_equation(self, item):
-        self.equation.append(item)
 
-    def get_equation(self):
-        if len(self.equation) == 1:
-            return self.equation[0]
-        else:
-            print("Solving incomplete")

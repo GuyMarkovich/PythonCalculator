@@ -1,3 +1,4 @@
+
 def print_welcome_message():
     print("Welcome to the Python Calculator")
     print("Enter 'q' to quit")
@@ -33,7 +34,7 @@ def continue_message():
 
 
 def continue_after_solution_message():
-    print("To enter another equation enter c")
+    print("To enter another equation press enter")
     print("To quit enter q")
     entry = input("Waiting for input: ")
     return entry
