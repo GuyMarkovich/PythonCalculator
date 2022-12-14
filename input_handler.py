@@ -79,7 +79,7 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                         append_operator(curr_equation, temp_lst)
                         cnt_holder.reset_minus_cnt()
                     else:
-                        op_str.add_to_begining('-')
+                        op_str.add_to_beginning('-')
                         cnt_holder.reset_minus_cnt()
                 else:  # number of minuses -1 is even, append a plus and one minus or tilde if needed
                     temp_lst = ['+', 'operator', opDict['-'] + cnt_holder.get_parentheses_multiplier()]
@@ -310,8 +310,9 @@ def calculate_equation(equation):
         print("Your equation: " + raw_input)
         result = "Error"
     try:
+        # calculate the equation
         curr_equation = get_result(curr_equation)
-        # print(curr_equation.equation)
+        # print(curr_equation.equation) - test print of the equation after calculation
     except ZeroDivisionError as e:
         print(e)
         print("Your equation: " + raw_input)

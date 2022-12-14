@@ -134,36 +134,38 @@ def calculate_unary(op1, operator):
 
 def get_result(curr_equation: Equation):
     """function that calculates the result of an equation"""
-    eq_len = len(curr_equation.equation)
-    i = 0
-    while eq_len > 1:
-        if curr_equation.equation[i][0] in globals.allOps:
-            if curr_equation.equation[i][0] in globals.binOps:
-                curr_equation.equation[i][0] = str(calculate_binary(curr_equation.equation[i - 2][0],
-                                                                    curr_equation.equation[i - 1][0],
-                                                                    curr_equation.equation[i][0]))
+    eq_len = len(curr_equation.equation)  # get length of equation
+    idx = 0 # index of current character
+    while eq_len > 1:  # while there are still operators in the equation
+        if curr_equation.equation[idx][0] in globals.allOps:
+            if curr_equation.equation[idx][0] in globals.binOps:
+                # if the operator is a binary operator calculate the result and replace the operator and the operands
+                curr_equation.equation[idx][0] = str(calculate_binary(curr_equation.equation[idx - 2][0],
+                                                                      curr_equation.equation[idx - 1][0],
+                                                                      curr_equation.equation[idx][0]))
+                # reduce length of equation by 2
                 eq_len -= 2
 
-                curr_equation.equation.pop(i - 1)
-                curr_equation.equation.pop(i - 2)
+                curr_equation.equation.pop(idx - 1)
+                curr_equation.equation.pop(idx - 2)
 
-                i = i - 2
-            elif curr_equation.equation[i][0] in globals.rightUnOps:
-                curr_equation.equation[i][0] = str(calculate_unary(curr_equation.equation[i - 1][0],
-                                                                   curr_equation.equation[i][0]))
+                idx = idx - 2
+            elif curr_equation.equation[idx][0] in globals.rightUnOps:
+                curr_equation.equation[idx][0] = str(calculate_unary(curr_equation.equation[idx - 1][0],
+                                                                     curr_equation.equation[idx][0]))
                 eq_len -= 1
 
-                curr_equation.equation.pop(i - 1)
+                curr_equation.equation.pop(idx - 1)
 
-                i = i - 1
-            elif curr_equation.equation[i][0] in globals.leftUnOps:
-                curr_equation.equation[i][0] = str(calculate_unary(curr_equation.equation[i - 1][0],
-                                                                   curr_equation.equation[i][0]))
+                idx = idx - 1
+            elif curr_equation.equation[idx][0] in globals.leftUnOps:
+                curr_equation.equation[idx][0] = str(calculate_unary(curr_equation.equation[idx - 1][0],
+                                                                     curr_equation.equation[idx][0]))
                 eq_len -= 1
 
-                curr_equation.equation.pop(i - 1)
+                curr_equation.equation.pop(idx - 1)
 
-                i = i - 1
-        i += 1
+                idx = idx - 1
+        idx += 1
 
     return curr_equation
