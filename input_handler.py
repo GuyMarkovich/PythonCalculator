@@ -1,3 +1,4 @@
+import globals
 from globals import *
 from classes import *
 from math_functions import *
@@ -12,11 +13,10 @@ def append_operator(curr_equation: Equation, temp_lst):
         # if the operator on top of the stack has a higher precedence than the current operator, pop the operator
         # from the stack and append it to the equation list
         if temp_lst[0] in globals.allOps:
-            if curr_equation.operator_stack[len(curr_equation.operator_stack) - 1][2] >= temp_lst[2]:
+            while (len(curr_equation.equation) != 0) and (len(curr_equation.operator_stack) != 0) \
+                    and (curr_equation.operator_stack[len(curr_equation.operator_stack) - 1][2] >= temp_lst[2]):
                 curr_equation.equation.append(curr_equation.operator_stack.pop())
-                curr_equation.operator_stack.append(temp_lst)
-            else:
-                curr_equation.operator_stack.append(temp_lst)
+            curr_equation.operator_stack.append(temp_lst)
         elif temp_lst[0] == '(':
             curr_equation.operator_stack.append(temp_lst)
         elif temp_lst[0] == ')':
@@ -42,10 +42,11 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
     """function for appending minus sighs, handles cases with multiple minus signs and their placement"""
     # in case of multiple minus signs:
     if cnt_holder.get_minus_cnt() > 1:
-        # if the equation is empty, or the previous non minus char is a binary op the minus sign is a left unary
+        # if the equation is empty, or the previous non-minus char is a binary op the minus sign is a left unary
         # operator
         if len(curr_equation.equation) == 0 or cnt_holder.pre_minus_char in globals.binOps:
-            # if the next character after minus is parenthesis, it is a left unary operator, and we can append a tilde
+            # if the next character after minus is parenthesis, it is a left unary operator,
+            # and we can append a tilde if number of minuses is odd
             if raw_input[index] == '(':
                 if cnt_holder.get_minus_cnt() % 2 == 1:
                     temp_lst = ['~', 'operator', opDict['~'] + cnt_holder.get_parentheses_multiplier()]
@@ -53,7 +54,9 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                     cnt_holder.reset_minus_cnt()
             # if not parenthesis, we can add a minus to the operand
             else:
-                op_str.add_to_begining('-')
+                # if number of minuses is odd, append a minus to the operand, else there's no need to append anything
+                if cnt_holder.get_minus_cnt() % 2 == 1:
+                    op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
         # if the equation is not empty and the minus is between two operands,
         # one minus is a left unary character and the rest are a binary operator
@@ -90,11 +93,11 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                         append_operator(curr_equation, temp_lst)
                         cnt_holder.reset_minus_cnt()
                     else:
-                        op_str.add_to_begining('-')
+                        op_str.add_to_beginning('-')
                         cnt_holder.reset_minus_cnt()
     # in case of one minus sign
     elif cnt_holder.get_minus_cnt() == 1:
-        # if the equation is empty, or the previous non minus char is a binary op the minus sign is a left unary
+        # if the equation is empty, or the previous non-minus char is a binary op the minus sign is a left unary
         # operator
         if len(curr_equation.equation) == 0 or cnt_holder.pre_minus_char in globals.binOps:
             # if the next character after minus is parenthesis, it is a left unary operator, and we can append a tilde
@@ -104,10 +107,11 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                 cnt_holder.reset_minus_cnt()
             # if not parenthesis, we can add a minus to the operand
             else:
-                op_str.add_to_begining('-')
+                op_str.add_to_beginning('-')
                 cnt_holder.reset_minus_cnt()
         # if the minus is between two operands it is a binary operator
-        elif (cnt_holder.pre_minus_char in globals.operands or cnt_holder.pre_minus_char == ')') and \
+        elif (cnt_holder.pre_minus_char in globals.operands or cnt_holder.pre_minus_char == ')'
+              or cnt_holder.pre_minus_char in globals.rightUnOps) and \
                 (raw_input[index] in globals.operands or raw_input[index] == '(' or raw_input[index] in leftUnOps):
             temp_lst = ['-', 'operator', opDict['-'] + cnt_holder.get_parentheses_multiplier()]
             append_operator(curr_equation, temp_lst)
@@ -141,7 +145,7 @@ def check_binOps(index, raw_input, curr_equation, cnt_holder, op_str):
     else:
         # keep count of how many minus signs have been seen
         if raw_input[index] == '-':
-            # remember the last non minus character
+            # remember the last non-minus character
             if index != 0:
                 if raw_input[index - 1] != '-':
                     cnt_holder.set_pre_minus_char(raw_input[index - 1])
@@ -167,8 +171,8 @@ def check_leftUnOps(index, raw_input, curr_equation, cnt_holder, op_str):
         raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, left unary operator "
                           f"must be followed by a number, minus, open parenthesis, or another left unary operator")
     # if the previous character is not a binary operator or an open parenthesis, throw a syntax error
-    elif index != 0 and raw_input[index - 1] not in binOps and raw_input[index - 1] != '(' and raw_input[index - 1] not \
-            in leftUnOps:
+    elif index != 0 and raw_input[index - 1] not in binOps and raw_input[index - 1] != '(' \
+            and raw_input[index - 1] not in leftUnOps:
         raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, left unary operator "
                           f"must be preceded by a binary operator, another left unary operator or an open parenthesis")
     # if passed all checks, append to curr_equation
@@ -181,8 +185,17 @@ def check_leftUnOps(index, raw_input, curr_equation, cnt_holder, op_str):
             raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, tilde (~) "
                               f"cannot be used more than once on one operand")
 
-        # since a left unary operator can appear after a minus we need to append any previously counted minus signs
-        append_minus(raw_input, index, curr_equation, cnt_holder, op_str)
+        # since a left unary operator can appear after a minus we need to append any previously counted minus signs,
+        # but because tilde has higher priority, if the minus is unary the minus will only be appended on the result
+        # of the tilde for this we will use the internal operator '_', it will only be used in this special case
+        if len(curr_equation.equation) == 0:
+            if cnt_holder.get_minus_cnt() > 0:
+                if cnt_holder.get_minus_cnt() % 2 == 1:
+                    temp_lst = ['_', 'operator', opDict['_'] + cnt_holder.get_parentheses_multiplier()]
+                    append_operator(curr_equation, temp_lst)
+                cnt_holder.reset_minus_cnt()
+        else:
+            append_minus(raw_input, index, curr_equation, cnt_holder, op_str)
 
         temp_lst = [raw_input[index], 'operator', opDict[raw_input[index]] + cnt_holder.parentheses_multiplier]
         append_operator(curr_equation, temp_lst)
@@ -219,9 +232,12 @@ def check_allOps(index, raw_input, curr_equation, cnt_holder, op_str):
     elif raw_input[index] in rightUnOps:
         check_rightUnOps(index, raw_input, curr_equation, cnt_holder)
         return
-    elif raw_input[index] in leftUnOps:
+    elif raw_input[index] in user_leftUnOps:
         check_leftUnOps(index, raw_input, curr_equation, cnt_holder, op_str)
         return
+    else:
+        raise SyntaxError(f"Invalid character: {raw_input[index]} in equation at index {index}, character is not a "
+                          f"valid operator")
 
 
 # check if input is valid
@@ -308,7 +324,8 @@ def calculate_equation(equation):
     except SyntaxError as e:
         print(e)
         print("Your equation: " + raw_input)
-        result = "Error"
+        result = "Error"  # if an error is thrown, return "Error"
+        return result
     try:
         # calculate the equation
         curr_equation = get_result(curr_equation)
@@ -327,5 +344,5 @@ def calculate_equation(equation):
         result = "Error"
 
     if result != "Error":
-        result = curr_equation.equation.pop()[0]
+        result = float(curr_equation.equation.pop()[0])
     return result

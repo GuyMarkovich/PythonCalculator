@@ -31,8 +31,10 @@ def division(a, b):
         return a / b
 
 
-# ^
+# ^ (power)
 def power(a, b):
+    if a < 0 and b % 1 != 0:
+        raise ValueError("Complex numbers are not supported by this calculator")
     res = pow(a, b)
     if res > 9223372036854775807:
         raise OverflowError("The result of the multiplication is too large")
@@ -40,7 +42,7 @@ def power(a, b):
         return pow(a, b)
 
 
-# %
+# % (modulo)
 def modulo(a, b):
     return a % b
 
@@ -71,10 +73,17 @@ def tilde(a):
     return a * (-1)
 
 
+# _ (internal unary minus)
+def underscore(a):
+    return a * (-1)
+
+
 # ! (factorial)
 def factorial(a):
     if a < 0:
         raise ValueError("Factorial is not defined for negative numbers")
+    elif a % 1 != 0:
+        raise ValueError("Factorial is not defined for non-integer numbers")
     elif a > 170:
         raise OverflowError("The result of the factorial is too large")
     elif a == 0:
@@ -85,6 +94,8 @@ def factorial(a):
 
 # # sum of digits
 def sum_of_digits(a):
+    if a % 1 != 0:
+        raise ValueError("The sum of digits is not defined for non-integer numbers")
     minus_sign = 1
     # if a is a negative number, make it positive and add a minus sign to the result
     if a < 0:
@@ -130,12 +141,14 @@ def calculate_unary(op1, operator):
         return factorial(op1)
     elif operator == '#':
         return sum_of_digits(op1)
+    elif operator == '_':
+        return underscore(op1)
 
 
 def get_result(curr_equation: Equation):
     """function that calculates the result of an equation"""
     eq_len = len(curr_equation.equation)  # get length of equation
-    idx = 0 # index of current character
+    idx = 0  # index of current character
     while eq_len > 1:  # while there are still operators in the equation
         if curr_equation.equation[idx][0] in globals.allOps:
             if curr_equation.equation[idx][0] in globals.binOps:
@@ -146,6 +159,7 @@ def get_result(curr_equation: Equation):
                 # reduce length of equation by 2
                 eq_len -= 2
 
+                # remove the operands used
                 curr_equation.equation.pop(idx - 1)
                 curr_equation.equation.pop(idx - 2)
 
@@ -155,6 +169,7 @@ def get_result(curr_equation: Equation):
                                                                      curr_equation.equation[idx][0]))
                 eq_len -= 1
 
+                # remove the operand used
                 curr_equation.equation.pop(idx - 1)
 
                 idx = idx - 1
@@ -163,9 +178,11 @@ def get_result(curr_equation: Equation):
                                                                      curr_equation.equation[idx][0]))
                 eq_len -= 1
 
+                # remove the operand used
                 curr_equation.equation.pop(idx - 1)
 
                 idx = idx - 1
         idx += 1
 
+    # return the result contained in the last element of the equation list
     return curr_equation

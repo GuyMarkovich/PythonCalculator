@@ -1,4 +1,4 @@
-# helper class to hold useful counters
+# helper class to hold useful counters and information that needs to be passed between functions
 class CounterHolder:
     def __init__(self):
         # counter for parentheses in the equation, keeps track of the priority
@@ -49,6 +49,8 @@ class CounterHolder:
     def set_pre_minus_char(self, char):
         self.pre_minus_char = char
 
+
+# class used to hold the operands, until they can be appended to the equation (helps with entering a multi digit number)
 class OpString:
     """class used to store an operand before it is added to the new list"""
 
@@ -68,9 +70,9 @@ class OpString:
         self.op_str = ''
 
 
+# class used to hold the equation, the equation is a list of lists,
+# where each list contains the operand/operator and its priority
 class Equation:
     def __init__(self):
-        self.equation = [] #list that will hold the equation
-        self.operator_stack = [] #stack that will hold the operators
-
-
+        self.equation = []  # list that will hold the equation
+        self.operator_stack = []  # stack that will hold the operators
