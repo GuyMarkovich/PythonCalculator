@@ -344,6 +344,6 @@ def calculate_equation(equation):
         print("Your equation: " + raw_input)
         result = "Error"
 
-    if result != "Error":
+    if result != "Error": #if no errors encountered print result
         result = float(curr_equation.equation.pop()[0])
     return result
