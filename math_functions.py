@@ -23,6 +23,8 @@ def multiplication(a, b):
     if res == float('inf'):
         raise OverflowError("The result of the operation is too large")
     else:
+        if res % 1 == 0:
+            res = int(res)
         return res
 
 
@@ -31,7 +33,10 @@ def division(a, b):
     if b == 0:
         raise ZeroDivisionError("Division by zero is not allowed")
     else:
-        return a / b
+        res = a / b
+        if res % 1 == 0:
+            res = int(res)
+        return res
 
 
 # ^ (power)
@@ -41,8 +46,10 @@ def power(a, b):
     res = pow(a, b)
     if res == float('inf'):
         raise OverflowError("The result of the operation is too large")
-    else:
-        return res
+    if res % 1 == 0:
+        res = int(res)
+
+    return res
 
 
 # % (modulo)
@@ -70,7 +77,10 @@ def minimum(a, b):
 
 # @ (average)
 def average(a, b):
-    return (a + b) / 2
+    res = (a + b) / 2
+    if res % 1 == 0:
+        res = int(res)
+    return res
 
 
 # ~ (change sign)
@@ -89,7 +99,7 @@ def factorial(a):
         raise ValueError("Factorial is not defined for negative numbers")
     elif a % 1 != 0:
         raise ValueError("Factorial is not defined for non-integer numbers")
-    #elif a > 170:
+    # elif a > 170:
     #   raise OverflowError("The result of the factorial is too large")
     elif a == 0:
         return 1
