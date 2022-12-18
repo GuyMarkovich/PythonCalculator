@@ -23,6 +23,8 @@ def multiplication(a, b):
     if res == float('inf'):
         raise OverflowError("The result of the operation is too large")
     else:
+        if res % 1 == 0:
+            res = int(res)
         return res
 
 
@@ -31,7 +33,10 @@ def division(a, b):
     if b == 0:
         raise ZeroDivisionError("Division by zero is not allowed")
     else:
-        return a / b
+        res = a / b
+        if res % 1 == 0:
+            res = int(res)
+        return res
 
 
 # ^ (power)
@@ -41,8 +46,10 @@ def power(a, b):
     res = pow(a, b)
     if res == float('inf'):
         raise OverflowError("The result of the operation is too large")
-    else:
-        return res
+    if res % 1 == 0:
+        res = int(res)
+
+    return res
 
 
 # % (modulo)
@@ -70,7 +77,10 @@ def minimum(a, b):
 
 # @ (average)
 def average(a, b):
-    return (a + b) / 2
+    res = (a + b) / 2
+    if res % 1 == 0:
+        res = int(res)
+    return res
 
 
 # ~ (change sign)
@@ -89,8 +99,8 @@ def factorial(a):
         raise ValueError("Factorial is not defined for negative numbers")
     elif a % 1 != 0:
         raise ValueError("Factorial is not defined for non-integer numbers")
-    elif a > 170:
-        raise OverflowError("The result of the factorial is too large")
+    # elif a > 170:
+    #   raise OverflowError("The result of the factorial is too large")
     elif a == 0:
         return 1
     else:
@@ -100,8 +110,9 @@ def factorial(a):
 
 # # sum of digits
 def sum_of_digits(a):
-    if a % 1 != 0:
-        raise ValueError("The sum of digits is not defined for non-integer numbers")
+    # support for non integer numbers
+    while a % 1 != 0:
+        a *= 10
     minus_sign = 1
     # if a is a negative number, make it positive and add a minus sign to the result
     if a < 0:
@@ -116,8 +127,8 @@ def sum_of_digits(a):
 
 def calculate_binary(op1, op2, operator):
     """function that calculates the result of an operation"""
-    op1 = float(op1)
-    op2 = float(op2)
+    # op1 = float(op1)
+    # op2 = float(op2)
     if operator == '+':
         return addition(op1, op2)
     elif operator == '-':
@@ -140,7 +151,7 @@ def calculate_binary(op1, op2, operator):
 
 def calculate_unary(op1, operator):
     """function that calculates the result of an operation"""
-    op1 = float(op1)
+    # op1 = float(op1)
     if operator == '~':
         return tilde(op1)
     elif operator == '!':
@@ -159,9 +170,9 @@ def get_result(curr_equation: Equation):
         if curr_equation.equation[idx][0] in globals.allOps:
             if curr_equation.equation[idx][0] in globals.binOps:
                 # if the operator is a binary operator calculate the result and replace the operator and the operands
-                curr_equation.equation[idx][0] = str(calculate_binary(curr_equation.equation[idx - 2][0],
-                                                                      curr_equation.equation[idx - 1][0],
-                                                                      curr_equation.equation[idx][0]))
+                curr_equation.equation[idx][0] = calculate_binary(curr_equation.equation[idx - 2][0],
+                                                                  curr_equation.equation[idx - 1][0],
+                                                                  curr_equation.equation[idx][0])
                 # reduce length of equation by 2
                 eq_len -= 2
 
@@ -171,8 +182,8 @@ def get_result(curr_equation: Equation):
 
                 idx = idx - 2
             elif curr_equation.equation[idx][0] in globals.rightUnOps:
-                curr_equation.equation[idx][0] = str(calculate_unary(curr_equation.equation[idx - 1][0],
-                                                                     curr_equation.equation[idx][0]))
+                curr_equation.equation[idx][0] = calculate_unary(curr_equation.equation[idx - 1][0],
+                                                                 curr_equation.equation[idx][0])
                 eq_len -= 1
 
                 # remove the operand used
@@ -180,8 +191,8 @@ def get_result(curr_equation: Equation):
 
                 idx = idx - 1
             elif curr_equation.equation[idx][0] in globals.leftUnOps:
-                curr_equation.equation[idx][0] = str(calculate_unary(curr_equation.equation[idx - 1][0],
-                                                                     curr_equation.equation[idx][0]))
+                curr_equation.equation[idx][0] = calculate_unary(curr_equation.equation[idx - 1][0],
+                                                                 curr_equation.equation[idx][0])
                 eq_len -= 1
 
                 # remove the operand used
