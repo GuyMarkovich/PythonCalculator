@@ -57,6 +57,6 @@ def test_complex_equations():
     assert calculate_equation('56478389# - 67&89*0.5') == 16.5
     assert calculate_equation('897%23 * 2^7 /(4*7$9)') == 0.0
     assert calculate_equation('1.38^2.5 * 7^9# - 4.5') == 90277610.28940076
-    assert calculate_equation('56&78$93 * 787# - (57!+4.5)') == -4.052691950487722e+76
+    assert calculate_equation('56&78$93 * 787# - (57!+4.5)') == -4.0526919504877214e+76
     assert calculate_equation('-(5!+4.5) - ~ (90^2 - 67!)') == -3.647111091818868e+94
     assert calculate_equation('-~(90-5) - 5! + 456## *2') == -23.0
