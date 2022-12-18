@@ -55,9 +55,9 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
             # if not parenthesis, we can add a minus to the operand
             else:
                 # if number of minuses is odd, append a minus to the operand, else there's no need to append anything
-                if cnt_holder.get_minus_cnt() % 2 == 1:
+                if cnt_holder.get_minus_cnt() % 2 == 1 and op_str.get_op_str() != '':
                     op_str.add_to_beginning('-')
-                cnt_holder.reset_minus_cnt()
+                    cnt_holder.reset_minus_cnt()
         # if the equation is not empty and the minus is between two operands,
         # one minus is a left unary character and the rest are a binary operator
         elif (cnt_holder.pre_minus_char in globals.operands or cnt_holder.pre_minus_char == ')') and \
@@ -107,8 +107,9 @@ def append_minus(raw_input, index, curr_equation, cnt_holder, op_str):
                 cnt_holder.reset_minus_cnt()
             # if not parenthesis, we can add a minus to the operand
             else:
-                op_str.add_to_beginning('-')
-                cnt_holder.reset_minus_cnt()
+                if op_str.get_op_str() != '':
+                    op_str.add_to_beginning('-')
+                    cnt_holder.reset_minus_cnt()
         # if the minus is between two operands it is a binary operator
         elif (cnt_holder.pre_minus_char in globals.operands or cnt_holder.pre_minus_char == ')'
               or cnt_holder.pre_minus_char in globals.rightUnOps) and \
@@ -249,10 +250,10 @@ def check_input(raw_input, curr_equation, op_str, cnt_holder: CounterHolder):
     index = 0
     for i in raw_input:
         if i in operands:
-            # append any previously counted minus signs
-            append_minus(raw_input, index, curr_equation, cnt_holder, op_str)
             # add operand to the string
             op_str.add_to_op_str(raw_input[index])
+            # append any previously counted minus signs
+            append_minus(raw_input, index, curr_equation, cnt_holder, op_str)
             index += 1
         elif i in allOps:
             # if operator is a decimal point no need to get rid of the stored operand string
@@ -343,6 +344,6 @@ def calculate_equation(equation):
         print("Your equation: " + raw_input)
         result = "Error"
 
-    if result != "Error":
+    if result != "Error": #if no errors encountered print result
         result = float(curr_equation.equation.pop()[0])
     return result
