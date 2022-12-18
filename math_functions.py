@@ -6,7 +6,10 @@ from classes import *
 
 # +
 def addition(a, b):
-    return a + b
+    res = a + b
+    if res == float('inf'):  # check if value reaches max float
+        raise OverflowError("The result of the operation is too large")
+    return res
 
 
 # -
@@ -17,8 +20,8 @@ def subtraction(a, b):
 # *
 def multiplication(a, b):
     res = a * b
-    if res > 9223372036854775807:
-        raise OverflowError("The result of the multiplication is too large")
+    if res == float('inf'):
+        raise OverflowError("The result of the operation is too large")
     else:
         return res
 
@@ -36,14 +39,16 @@ def power(a, b):
     if a < 0 and b % 1 != 0:
         raise ValueError("Complex numbers are not supported by this calculator")
     res = pow(a, b)
-    if res > 9223372036854775807:
-        raise OverflowError("The result of the multiplication is too large")
+    if res == float('inf'):
+        raise OverflowError("The result of the operation is too large")
     else:
-        return pow(a, b)
+        return res
 
 
 # % (modulo)
 def modulo(a, b):
+    if b == 0:
+        raise ValueError("Cannot do modulo on 0, illegal operation")
     return a % b
 
 
@@ -89,6 +94,7 @@ def factorial(a):
     elif a == 0:
         return 1
     else:
+        a = int(a)
         return a * factorial(a - 1)
 
 
