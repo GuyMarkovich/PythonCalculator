@@ -30,7 +30,12 @@ def append_operator(curr_equation: Equation, temp_lst):
 def append_operand(op_str, curr_equation, cnt_holder):
     """Function to append the accumulated operand string to the equation list as one operand"""
     if op_str.get_op_str() != '':
-        temp_lst = [op_str.get_op_str(), 'operand', 0]
+        if '.' in op_str.get_op_str():
+            temp_lst = [float(op_str.get_op_str()), 'operand',
+                        cnt_holder.get_parentheses_multiplier()]
+        else:
+            temp_lst = [int(op_str.get_op_str()), 'operand',
+                        cnt_holder.get_parentheses_multiplier()]
         curr_equation.equation.append(temp_lst)
         # reset operand string
         op_str.empty_op_str()
@@ -345,5 +350,5 @@ def calculate_equation(equation):
         result = "Error"
 
     if result != "Error": #if no errors encountered print result
-        result = float(curr_equation.equation.pop()[0])
+        result = curr_equation.equation.pop()[0]
     return result
